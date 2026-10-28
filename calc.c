@@ -69,7 +69,7 @@ static Value primary(Parser *s) {
     }
     return make_int(strtoll(begin, NULL, 10));
 }
-// AI (ChatGPT): prompt "implement right-associative power in a C parser".
+
 // Recursion on the right makes 2**3**2 equivalent to 2**(3**2).
 static Value power(Parser *s) {
     Value a = primary(s);
