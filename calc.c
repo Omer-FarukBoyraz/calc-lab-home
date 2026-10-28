@@ -4,7 +4,85 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
+
+char *p;
+
+void skip_spaces(void)
+{
+    while (*p == ' ' || *p == '\t')
+        p++;
+}
+
+long long expr(void);
+
+long long primary(void)
+{
+    long long result;
+
+    skip_spaces();
+
+    if (*p == '(') {
+        p++;
+        result = expr();
+        skip_spaces();
+
+        if (*p == ')')
+            p++;
+
+        return result;
+    }
+
+    return strtoll(p, &p, 10);
+}
+
+long long term(void)
+{
+    long long result = primary();
+
+    while (1) {
+        skip_spaces();
+
+        if (*p == '*') {
+            p++;
+            result *= primary();
+        }
+        else if (*p == '/') {
+            p++;
+            long long n = primary();
+
+            if (n != 0)
+                result /= n;
+        }
+        else {
+            break;
+        }
+    }
+
+    return result;
+}
+
+long long expr(void)
+{
+    long long result = term();
+
+    while (1) {
+        skip_spaces();
+
+        if (*p == '+') {
+            p++;
+            result += term();
+        }
+        else if (*p == '-') {
+            p++;
+            result -= term();
+        }
+        else {
+            break;
+        }
+    }
+
+    return result;
+}
 
 int main(int argc, char *argv[])
 {
@@ -24,42 +102,13 @@ int main(int argc, char *argv[])
     }
 
     while (fgets(line, sizeof(line), file) != NULL) {
-        char *p = line;
-        long long result;
-        long long number;
+        p = line;
+        skip_spaces();
 
-        while (isspace((unsigned char)*p))
-            p++;
-
-        if (*p == '\0')
+        if (*p == '\0' || *p == '\n')
             continue;
 
-        result = strtoll(p, &p, 10);
-
-        while (*p != '\0' && *p != '\n') {
-            char op;
-
-            while (*p == ' ' || *p == '\t')
-                p++;
-
-            if (*p == '\0' || *p == '\n')
-                break;
-
-            op = *p;
-            p++;
-
-            while (*p == ' ' || *p == '\t')
-                p++;
-
-            number = strtoll(p, &p, 10);
-
-            if (op == '+')
-                result += number;
-            else if (op == '-')
-                result -= number;
-        }
-
-        printf("%lld\n", result);
+        printf("%lld\n", expr());
     }
 
     fclose(file);
